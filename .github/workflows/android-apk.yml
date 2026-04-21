@@ -2,14 +2,11 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      npm_config_ignore_optional: true
 
     steps:
       - name: Checkout code
@@ -26,17 +23,19 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Clean install dependencies
+      # 🔴 أهم خطوة لحل مشكلة oxide
+      - name: Install dependencies (safe mode)
         run: |
-          rm -rf node_modules package-lock.json
-          npm cache clean --force
+          npm config set optional false
+          npm config set ignore-scripts true
           npm install --legacy-peer-deps
 
-      - name: Rebuild dependencies
-        run: npm rebuild
+      # 🔴 إعادة تفعيل السكربتات بعد التثبيت
+      - name: Re-enable scripts
+        run: npm config set ignore-scripts false
 
-      - name: Build web app
-        run: npm run build
+      - name: Build web app (force Vite safe mode)
+        run: npx vite build --mode production
 
       - name: Sync Capacitor
         run: npx cap sync android
