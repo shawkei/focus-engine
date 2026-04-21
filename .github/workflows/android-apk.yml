@@ -23,29 +23,31 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 🔴 أهم خطوة لحل مشكلة oxide
-      - name: Install dependencies (safe mode)
+      # 🔴 أهم خطوة: منع optional deps بالكامل أثناء install
+      - name: Install dependencies safely
         run: |
-          npm config set optional false
-          npm config set ignore-scripts true
-          npm install --legacy-peer-deps
+          npm ci --legacy-peer-deps --omit=optional
 
-      # 🔴 إعادة تفعيل السكربتات بعد التثبيت
-      - name: Re-enable scripts
-        run: npm config set ignore-scripts false
+      # 🔴 ضمان عدم تحميل native bindings
+      - name: Force clean rebuild of node modules
+        run: npm rebuild
 
-      - name: Build web app (force Vite safe mode)
-        run: npx vite build --mode production
+      # 🔴 بناء الويب
+      - name: Build web app
+        run: npm run build
 
+      # 🔴 Capacitor sync
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # 🔴 بناء APK
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      # 🔴 رفع APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
