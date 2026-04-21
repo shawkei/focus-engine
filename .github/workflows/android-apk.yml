@@ -31,6 +31,10 @@ jobs:
       - name: Rebuild Rollup
         run: npm rebuild rollup
 
+      # ✔️ هنا مكان الـ CI flag
+      - name: Set CI flag
+        run: echo "CI=true" >> $GITHUB_ENV
+
       - name: Build web app
         run: npm run build
 
