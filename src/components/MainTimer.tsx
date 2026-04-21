@@ -25,11 +25,12 @@ export const MainTimer: React.FC = () => {
 
   useEffect(() => {
     if (isRunning && timeLeft === 0) {
+      const { audioSound, customAudioData } = useFocusStore.getState();
       if (audioEnabled && audioSound) {
-        soundService.play(audioSound);
+        soundService.play(audioSound, customAudioData);
       }
     }
-  }, [timeLeft, isRunning, audioEnabled, audioSound]);
+  }, [timeLeft, isRunning, audioEnabled]);
 
   useEffect(() => {
     if (isRunning) {

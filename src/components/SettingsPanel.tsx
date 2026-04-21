@@ -25,19 +25,40 @@ export const SettingsPanel: React.FC = () => {
     setAudioEnabled,
     audioSound,
     setAudioSound,
+    customAudioName,
+    customAudioData,
+    setCustomAudio,
     setCurrentView
   } = useFocusStore();
 
   const [newCatName, setNewCatName] = useState('');
   const [isResetConfirming, setIsResetConfirming] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const soundOptions: { name: string; id: SoundType }[] = [
+  const soundOptions: { name: string; id: any }[] = [
     { name: 'NEURAL CHIME', id: 'chime' },
     { name: 'DIGITAL ALERT', id: 'digital' },
     { name: 'OS PULSE', id: 'pulse' },
+    { name: customAudioName ? customAudioName.toUpperCase() : 'CUSTOM AUDIO', id: 'custom' },
   ];
 
   const durations = categoryDurations[selectedGoal] || { low: 15, normal: 25, high: 45 };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File too large. Max 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const data = event.target?.result as string;
+        setCustomAudio(file.name, data);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,21 +159,44 @@ export const SettingsPanel: React.FC = () => {
                       className="space-y-3 overflow-hidden"
                     >
                       {soundOptions.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => {
-                            setAudioSound(opt.id);
-                            soundService.play(opt.id);
-                          }}
-                          className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                            audioSound === opt.id 
-                              ? 'bg-accent-blue/10 border-accent-blue text-accent-blue' 
-                              : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10'
-                          }`}
-                        >
-                          <span className="text-[10px] font-black uppercase tracking-widest">{opt.name}</span>
-                          {audioSound === opt.id && <div className="w-2 h-2 rounded-full bg-accent-blue shadow-[0_0_8px_rgba(0,122,255,1)]" />}
-                        </button>
+                        <div key={opt.id} className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setAudioSound(opt.id);
+                              if (opt.id === 'custom' && customAudioData) {
+                                soundService.play('custom', customAudioData);
+                              } else if (opt.id !== 'custom') {
+                                soundService.play(opt.id);
+                              }
+                            }}
+                            className={`flex-1 p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
+                              audioSound === opt.id 
+                                ? 'bg-accent-blue/10 border-accent-blue text-accent-blue' 
+                                : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10'
+                            }`}
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-widest truncate">{opt.name}</span>
+                            {audioSound === opt.id && <div className="w-2 h-2 rounded-full bg-accent-blue shadow-[0_0_8px_rgba(0,122,255,1)]" />}
+                          </button>
+                          
+                          {opt.id === 'custom' && (
+                            <>
+                              <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleFileChange} 
+                                accept="audio/*" 
+                                className="hidden" 
+                              />
+                              <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="px-4 rounded-2xl bg-white/5 border border-white/5 text-white/40 hover:text-white transition-all text-[10px] font-black uppercase"
+                              >
+                                LOAD
+                              </button>
+                            </>
+                          )}
+                        </div>
                       ))}
                     </motion.div>
                   )}

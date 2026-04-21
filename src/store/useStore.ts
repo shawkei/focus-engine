@@ -21,7 +21,9 @@ interface FocusState {
   
   // Audio State
   audioEnabled: boolean;
-  audioSound: 'digital' | 'chime' | 'pulse';
+  audioSound: 'digital' | 'chime' | 'pulse' | 'custom';
+  customAudioData: string | null; // Base64 or Blob URL
+  customAudioName: string | null;
   
   // Timer State
   isRunning: boolean;
@@ -31,7 +33,8 @@ interface FocusState {
   toggleSettings: () => void;
   setCurrentView: (view: 'main' | 'stats') => void;
   setAudioEnabled: (enabled: boolean) => void;
-  setAudioSound: (sound: 'digital' | 'chime' | 'pulse') => void;
+  setAudioSound: (sound: 'digital' | 'chime' | 'pulse' | 'custom') => void;
+  setCustomAudio: (name: string, data: string) => void;
   setEnergyLevel: (level: EnergyLevel) => void;
   setSelectedGoal: (goal: string) => void;
   setCategoryDuration: (category: string, level: EnergyLevel, minutes: number) => void;
@@ -75,6 +78,8 @@ export const useFocusStore = create<FocusState>()(
       currentView: 'main',
       audioEnabled: true,
       audioSound: 'chime',
+      customAudioData: null,
+      customAudioName: null,
       isRunning: false,
       timeLeft: INITIAL_DURATIONS['normal'] * 60,
 
@@ -82,6 +87,7 @@ export const useFocusStore = create<FocusState>()(
       setCurrentView: (view) => set({ currentView: view }),
       setAudioEnabled: (enabled) => set({ audioEnabled: enabled }),
       setAudioSound: (sound) => set({ audioSound: sound }),
+      setCustomAudio: (name, data) => set({ customAudioName: name, customAudioData: data, audioSound: 'custom' }),
 
       setEnergyLevel: (level) => {
         const { isRunning, selectedGoal, categoryDurations } = get();
@@ -257,6 +263,12 @@ export const useFocusStore = create<FocusState>()(
         stats: state.stats,
         energyLevel: state.energyLevel,
         selectedGoal: state.selectedGoal,
+        customCategories: state.customCategories,
+        categoryDurations: state.categoryDurations,
+        audioSound: state.audioSound,
+        audioEnabled: state.audioEnabled,
+        customAudioData: state.customAudioData,
+        customAudioName: state.customAudioName,
       }),
     }
   )

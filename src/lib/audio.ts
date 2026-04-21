@@ -14,7 +14,7 @@ class SoundService {
     }
   }
 
-  async play(type: SoundType) {
+  async play(type: SoundType | 'custom', customData?: string | null) {
     this.initCtx();
     if (!this.ctx) return;
 
@@ -24,6 +24,11 @@ class SoundService {
 
     const now = this.ctx.currentTime;
     
+    if (type === 'custom' && customData) {
+      this.playCustom(customData);
+      return;
+    }
+
     switch (type) {
       case 'digital':
         this.playDigital(now);
@@ -34,6 +39,23 @@ class SoundService {
       case 'pulse':
         this.playPulse(now);
         break;
+    }
+  }
+
+  private async playCustom(data: string) {
+    if (!this.ctx) return;
+    try {
+      // Decode base64
+      const response = await fetch(data);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+      
+      const source = this.ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.ctx.destination);
+      source.start();
+    } catch (e) {
+      console.error('Failed to play custom audio', e);
     }
   }
 
