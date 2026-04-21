@@ -32,7 +32,13 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
-
+        
+      - name: Recreate Android (Fix Wrapper)
+        run: |
+          rm -rf android
+          npx cap add android
+          npx cap sync android
+          
       - name: Build APK
         run: |
           cd android
