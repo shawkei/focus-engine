@@ -9,50 +9,65 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # ✔ Node 22 (مطلوب Capacitor الجديد)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      # ✔ Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Clean install dependencies (fix native modules)
+      # ✔ Clean install (fix rollup + tailwind + npm issues)
+      - name: Clean install dependencies
         run: |
           rm -rf node_modules package-lock.json
           npm cache clean --force
           npm install --include=optional --legacy-peer-deps
 
-      - name: Rebuild Rollup
-        run: npm rebuild rollup
-
-      # ✔️ هنا مكان الـ CI flag
-      - name: Set CI flag
-        run: echo "CI=true" >> $GITHUB_ENV
-        
-
+      # ✔ Fix missing dependency from recharts
       - name: Fix missing dependency (react-is)
         run: npm install react-is --legacy-peer-deps
-  
+
+      # ✔ Rebuild native modules (rollup fix)
+      - name: Rebuild dependencies
+        run: npm rebuild
+
+      # ✔ CI flag (important for vite.config.ts tailwind disable)
+      - name: Set CI flag
+        run: echo "CI=true" >> $GITHUB_ENV
+
+      # ✔ Build web (Vite)
       - name: Build web app
         run: npm run build
 
+      # ✔ Capacitor sync
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build APK
+      # ✔ Fix Gradle wrapper (حل الخطأ jarfile)
+      - name: Fix Gradle wrapper
         run: |
           cd android
           chmod +x gradlew
+          ./gradlew wrapper --gradle-version 8.7
+
+      # ✔ Build APK
+      - name: Build APK
+        run: |
+          cd android
           ./gradlew assembleDebug
 
+      # ✔ Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
