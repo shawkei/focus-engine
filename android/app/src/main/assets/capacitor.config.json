@@ -1,0 +1,8 @@
+{
+	"appId": "com.focusengine.app",
+	"appName": "Focus Engine",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}

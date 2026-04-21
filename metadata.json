@@ -1,0 +1,6 @@
+{
+  "name": "Remix: Focus Engine",
+  "description": "A smart, adaptive Pomodoro focus system with advanced analytics, custom time-filtering, and intelligent audio alerts.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["analytics", "audio-alerts"]
+}
