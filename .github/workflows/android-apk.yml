@@ -25,14 +25,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # ✔ Clean install (fix rollup + tailwind + npm issues)
+      # ✔ Clean install (fix all npm issues)
       - name: Clean install dependencies
         run: |
           rm -rf node_modules package-lock.json
           npm cache clean --force
           npm install --include=optional --legacy-peer-deps
 
-      # ✔ Fix missing dependency from recharts
+      # ✔ Fix missing dependency (recharts issue)
       - name: Install missing dependency (react-is)
         run: npm install react-is --legacy-peer-deps
 
@@ -40,11 +40,11 @@ jobs:
       - name: Rebuild dependencies
         run: npm rebuild
 
-      # ✔ CI flag (for vite.config.ts to disable tailwind plugin in CI)
+      # ✔ CI flag (disable Tailwind oxide in CI)
       - name: Set CI flag
         run: echo "CI=true" >> $GITHUB_ENV
 
-      # ✔ Build web (Vite)
+      # ✔ Build web app (Vite)
       - name: Build web app
         run: npm run build
 
@@ -52,15 +52,15 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # ✔ FIX Gradle wrapper corruption (IMPORTANT)
-      - name: Fix Gradle Wrapper (rebuild)
+      # ✔ FIX Gradle wrapper (8.13 REQUIRED)
+      - name: Fix Gradle Wrapper (8.13)
         run: |
           cd android
           rm -f gradle/wrapper/gradle-wrapper.jar
-          curl -L https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
+          curl -L https://services.gradle.org/distributions/gradle-8.13-bin.zip -o gradle.zip
           unzip -q gradle.zip -d /tmp/gradle
-          export PATH=$PATH:/tmp/gradle/gradle-8.7/bin
-          gradle wrapper --gradle-version 8.7
+          export PATH=$PATH:/tmp/gradle/gradle-8.13/bin
+          gradle wrapper --gradle-version 8.13
 
       # ✔ Build APK
       - name: Build APK
@@ -69,7 +69,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # ✔ Upload APK
+      # ✔ Upload APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
