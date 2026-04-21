@@ -13,41 +13,45 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2) Node setup (Capacitor + Vite compatible)
+      # 2) Node setup
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      # 3) Java setup (Gradle 8.13 compatible)
+      # 3) Java setup
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-      # 4) Install dependencies clean
+      # 4) Install dependencies
       - name: Install dependencies
         run: |
           rm -rf node_modules package-lock.json
           npm cache clean --force
           npm install --legacy-peer-deps
 
-      # 5) Fix missing react-is dependency (recharts fix)
+      # 5) Fix recharts dependency
       - name: Fix missing dependency
         run: npm install react-is --legacy-peer-deps
 
-      # 6) Build web app (Vite)
+      # 6) Build web app
       - name: Build web app
         run: |
           rm -rf dist
           npm run build
 
-      # 7) Verify build output
+      # 7) Check dist
       - name: Check dist
         run: ls -la dist
 
-      # 8) Fix broken Gradle wrapper (CRITICAL FIX)
+      # ✅ 8) توليد الأيقونات (المهم جدًا)
+      - name: Generate App Icons
+        run: npx @capacitor/assets generate
+
+      # 9) Fix Gradle Wrapper
       - name: Fix Gradle Wrapper
         run: |
           cd android
@@ -57,20 +61,20 @@ jobs:
           export PATH=$PATH:/tmp/gradle/gradle-8.13/bin
           gradle wrapper --gradle-version 8.13
 
-      # 9) Capacitor sync (clean assets)
+      # 10) Sync Capacitor
       - name: Sync Capacitor
         run: |
           rm -rf android/app/src/main/assets/public
           npx cap sync android
 
-      # 10) Build APK
+      # 11) Build APK
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 11) Upload APK artifact
+      # 12) Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
